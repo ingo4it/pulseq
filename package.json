@@ -1,0 +1,50 @@
+{
+  "name": "pulseq",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Distributed task queue on Redis streams: retries, backoff+jitter, DLQ, idempotency, backpressure, visibility timeout, graceful shutdown, Prometheus metrics.",
+  "author": "Frank Rao <frank@frankrao.com>",
+  "license": "MIT",
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev:worker": "tsx watch src/entrypoints/worker.ts",
+    "dev:admin": "tsx watch src/entrypoints/admin.ts",
+    "start:worker": "node dist/entrypoints/worker.js",
+    "start:admin": "node dist/entrypoints/admin.js",
+    "migrate": "prisma migrate deploy",
+    "migrate:dev": "prisma migrate dev",
+    "generate": "prisma generate",
+    "demo:load": "tsx bench/load.ts --preset demo",
+    "bench": "tsx bench/load.ts --preset bench --out bench/results/latest.json",
+    "lint": "eslint . && prettier --check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@prisma/client": "^5.22.0",
+    "fastify": "^5.1.0",
+    "fastify-plugin": "^5.0.1",
+    "ioredis": "^5.4.1",
+    "pino": "^9.5.0",
+    "prom-client": "^15.1.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@types/node": "^22.9.0",
+    "@vitest/coverage-v8": "^2.1.5",
+    "eslint": "^9.14.0",
+    "prettier": "^3.3.3",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.14.0",
+    "vitest": "^2.1.5"
+  }
+}

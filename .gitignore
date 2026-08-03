@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.local
+*.local
+
+bench/results/*.local.json
+
+*.log
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,97 @@
+// pulseq durable state.
+//
+// Redis is the transport and the hot path: the `ready` stream (consumer group),
+// a `delayed` sorted set, and a `dlq` stream per namespace. Postgres is the
+// durable record — it survives a Redis flush, backs the admin API's queries and
+// history, and holds the idempotency ledger that makes at-least-once delivery
+// safe for consumers with side effects.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobState {
+  DELAYED // waiting in the delayed ZSET for its runAt
+  READY // in the ready stream, not yet leased
+  LEASED // claimed by a worker, lease not yet expired
+  SUCCEEDED
+  FAILED // a terminal attempt failed but retries remain (transient)
+  DEAD // moved to the DLQ after exhausting maxAttempts
+}
+
+model Job {
+  id             String   @id @default(uuid()) @db.Uuid
+  namespace      String
+  type           String
+  payload        Json
+  state          JobState @default(READY)
+
+  attempt        Int      @default(0)
+  maxAttempts    Int      @default(5)
+
+  // set only for jobs whose handler opted into idempotent delivery
+  idempotencyKey String?
+
+  // the Redis stream entry id this job currently occupies in `ready`
+  streamId       String?
+  // lease bookkeeping mirrors Redis so the admin API can show it without a
+  // scan of the pending-entries list
+  leaseOwner     String?
+  leaseExpiresAt DateTime?
+
+  runAt          DateTime @default(now())
+  enqueuedAt     DateTime @default(now())
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  updatedAt      DateTime @updatedAt
+
+  lastError      String?
+  attempts       JobAttempt[]
+
+  @@index([namespace, state])
+  @@index([namespace, runAt])
+  @@index([idempotencyKey])
+  @@map("jobs")
+}
+
+// One row per delivery attempt, for the admin timeline and retry-rate metrics.
+model JobAttempt {
+  id         String   @id @default(uuid()) @db.Uuid
+  jobId      String   @db.Uuid
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  attempt    Int
+  worker     String
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  outcome    String // "succeeded" | "retryable_error" | "dead" | "lease_lost"
+  error      String?
+  durationMs Int?
+
+  @@index([jobId])
+  @@map("job_attempts")
+}
+
+// Idempotency ledger. A handler wrapped with `withIdempotency(key, fn)` inserts
+// IN_PROGRESS on first delivery; a redelivery that finds COMPLETED returns the
+// recorded result without re-running the side effect. Entries expire so the
+// table doesn't grow without bound.
+model IdempotencyKey {
+  key         String   @id
+  namespace   String
+  jobId       String   @db.Uuid
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED
+  resultHash  String?
+  result      Json?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+  expiresAt   DateTime
+
+  @@index([namespace])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}

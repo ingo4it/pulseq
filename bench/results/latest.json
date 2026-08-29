@@ -1,0 +1,9 @@
+{
+  "status": "not-yet-measured",
+  "note": "Placeholder. `pnpm bench` overwrites this with a real run against Redis + Postgres + a running worker on real hardware. No fabricated numbers are committed. The README benchmark table stays '_to be measured_' until this file has real values.",
+  "generatedAt": null,
+  "throughputJobsPerSec": null,
+  "latencyMs": { "p50": null, "p95": null, "p99": null },
+  "retryRate": null,
+  "dlqRate": null
+}

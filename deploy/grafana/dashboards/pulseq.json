@@ -1,0 +1,73 @@
+{
+  "title": "pulseq — queue health",
+  "uid": "pulseq-main",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "time": { "from": "now-15m", "to": "now" },
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Queue depth (ready / delayed / in-flight)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum by (namespace) (pulseq_queue_ready)", "legendFormat": "{{namespace}} ready" },
+        { "expr": "sum by (namespace) (pulseq_queue_delayed)", "legendFormat": "{{namespace}} delayed" },
+        { "expr": "sum by (namespace) (pulseq_queue_in_flight)", "legendFormat": "{{namespace}} in-flight" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "DLQ size",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [{ "expr": "sum by (namespace) (pulseq_queue_dlq)", "legendFormat": "{{namespace}}" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "Throughput by outcome (jobs/s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "sum by (outcome) (rate(pulseq_jobs_processed_total[1m]))", "legendFormat": "{{outcome}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Processing latency p50 / p95 / p99 (s)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.5, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Retry rate (retries / attempts)",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(pulseq_jobs_processed_total{outcome=\"retry_scheduled\"}[5m])) / clamp_min(sum(rate(pulseq_job_attempts_total[5m])), 1)"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "DLQ rate (dead / attempts)",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(pulseq_jobs_processed_total{outcome=\"dead_lettered\"}[5m])) / clamp_min(sum(rate(pulseq_job_attempts_total[5m])), 1)"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Lease renewals & reclaims (per 5m)",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 16 },
+      "targets": [
+        { "expr": "sum(increase(pulseq_lease_renewals_total[5m]))", "legendFormat": "renewals" },
+        { "expr": "sum(increase(pulseq_jobs_reclaimed_total[5m]))", "legendFormat": "reclaims" }
+      ]
+    }
+  ]
+}

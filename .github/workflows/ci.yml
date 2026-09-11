@@ -55,7 +55,7 @@ jobs:
       # Testcontainers-style suite: real Redis + Postgres exercise lease/ack,
       # retry+backoff, DLQ+replay, lease expiry+reclaim, idempotent redelivery,
       # graceful shutdown.
-      - run: pnpm test -- --dir test/integration
+      - run: pnpm test -- test/integration
 
   docker:
     runs-on: ubuntu-latest

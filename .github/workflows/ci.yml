@@ -21,7 +21,7 @@ jobs:
       - run: pnpm prisma generate
       - run: pnpm typecheck
       - run: pnpm lint
-      - run: pnpm test --coverage
+      - run: pnpm test -- --coverage
 
   integration:
     runs-on: ubuntu-latest

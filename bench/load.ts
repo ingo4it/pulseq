@@ -44,7 +44,11 @@ async function main(): Promise<void> {
     logger,
     defaultMaxAttempts: config.retry.defaultMaxAttempts,
     leaseTtlMs: config.worker.leaseTtlMs,
-    backoff: { baseMs: config.retry.backoffBaseMs, capMs: config.retry.backoffCapMs, jitter: config.retry.jitter },
+    backoff: {
+      baseMs: config.retry.backoffBaseMs,
+      capMs: config.retry.backoffCapMs,
+      jitter: config.retry.jitter,
+    },
   });
 
   console.log(`enqueuing ${jobs} jobs (failRate=${failRate}, poisonRate=${poisonRate}) into "${namespace}"…`);

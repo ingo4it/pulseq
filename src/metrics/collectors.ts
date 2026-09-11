@@ -60,22 +60,45 @@ export class Metrics {
     registers: [this.registry],
   });
 
-  readonly depthReady = new Gauge({ name: "pulseq_queue_ready", help: "Ready stream length", labelNames: ["namespace"], registers: [this.registry] });
-  readonly depthDelayed = new Gauge({ name: "pulseq_queue_delayed", help: "Delayed set size", labelNames: ["namespace"], registers: [this.registry] });
-  readonly depthDlq = new Gauge({ name: "pulseq_queue_dlq", help: "DLQ stream length", labelNames: ["namespace"], registers: [this.registry] });
-  readonly depthInFlight = new Gauge({ name: "pulseq_queue_in_flight", help: "Pending (leased, un-acked) entries", labelNames: ["namespace"], registers: [this.registry] });
-
-  constructor() {
-    collectDefaultMetrics({ register: this.registry, prefix: "pulseq_" });
-  }
+  readonly depthDelayed = new Gauge({
+    name: "pulseq_queue_delayed",
+    help: "Delayed set size",
+    labelNames: ["namespace"],
+    registers: [this.registry],
+  });
+  readonly depthDlq = new Gauge({
+    name: "pulseq_queue_dlq",
+    help: "DLQ stream length",
+    labelNames: ["namespace"],
+    registers: [this.registry],
+  });
+  readonly depthInFlight = new Gauge({
+    name: "pulseq_queue_in_flight",
+    help: "Pending (leased, un-acked) entries",
+    labelNames: ["namespace"],
+    registers: [this.registry],
+  });
 
   /**
-   * Wire the depth gauges to a scrape-time Redis query. prom-client invokes a
-   * gauge's `collect` callback on every scrape, so depth is always current
-   * without a background poller.
+   * `bindDepth()` fills this in once the queue + namespace list are known
+   * (they aren't yet when the gauges above are constructed). `depthReady`'s
+   * `collect` callback, registered below, reads it at scrape time.
    */
-  bindDepth(queue: Queue, namespaces: string[]): void {
-    this.depthReady.collect = async () => {
+  private depthSource: { queue: Queue; namespaces: string[] } | null = null;
+
+  /**
+   * Populated by a scrape-time Redis query rather than a background poller —
+   * prom-client invokes a gauge's `collect` callback on every `/metrics`
+   * request, so depth is always current and costs nothing between scrapes.
+   */
+  readonly depthReady = new Gauge({
+    name: "pulseq_queue_ready",
+    help: "Ready stream length",
+    labelNames: ["namespace"],
+    registers: [this.registry],
+    collect: async () => {
+      if (!this.depthSource) return;
+      const { queue, namespaces } = this.depthSource;
       for (const ns of namespaces) {
         const d = await queue.depth(ns).catch(() => null);
         if (!d) continue;
@@ -84,7 +107,16 @@ export class Metrics {
         this.depthDlq.set({ namespace: ns }, d.dlq);
         this.depthInFlight.set({ namespace: ns }, d.inFlight);
       }
-    };
+    },
+  });
+
+  constructor() {
+    collectDefaultMetrics({ register: this.registry, prefix: "pulseq_" });
+  }
+
+  /** Wire the depth gauges to a queue + namespace list. See `depthSource`. */
+  bindDepth(queue: Queue, namespaces: string[]): void {
+    this.depthSource = { queue, namespaces };
   }
 
   async scrape(): Promise<string> {

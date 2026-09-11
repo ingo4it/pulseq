@@ -86,7 +86,10 @@ export async function adminRoutes(app: FastifyInstance, deps: AdminDeps): Promis
       maxAttempts: job.maxAttempts,
       idempotencyKey: job.idempotencyKey ?? undefined,
     });
-    await prisma.job.update({ where: { id }, data: { state: "SUCCEEDED", lastError: `superseded by ${newId}` } });
+    await prisma.job.update({
+      where: { id },
+      data: { state: "SUCCEEDED", lastError: `superseded by ${newId}` },
+    });
     return { retriedAs: newId };
   });
 }

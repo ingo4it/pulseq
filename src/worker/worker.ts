@@ -3,9 +3,10 @@ import type { Config } from "../config.js";
 import type { JsonValue, LeasedJob } from "../core/types.js";
 import type { Queue } from "../queue/queue.js";
 import type { Metrics } from "../metrics/collectors.js";
-import { HandlerRegistry, NoHandlerError, type JobContext } from "./handler.js";
+import type { HandlerRegistry } from "./handler.js";
+import { NoHandlerError, type JobContext } from "./handler.js";
 import { Semaphore } from "./semaphore.js";
-import { IdempotencyStore } from "../idempotency/store.js";
+import type { IdempotencyStore } from "../idempotency/store.js";
 import { withIdempotency } from "../idempotency/wrap.js";
 import { workerId } from "../core/ids.js";
 
@@ -80,17 +81,17 @@ export class Worker {
     this.shutdownController.abort();
     this.timers.forEach(clearInterval);
 
-    await Promise.race([
-      Promise.allSettled(this.loops),
-      new Promise((r) => setTimeout(r, deadlineMs)),
-    ]);
+    await Promise.race([Promise.allSettled(this.loops), new Promise((r) => setTimeout(r, deadlineMs))]);
 
     const start = Date.now();
     while (this.inFlight.size > 0 && Date.now() - start < deadlineMs) {
       await new Promise((r) => setTimeout(r, 100));
     }
     if (this.inFlight.size > 0) {
-      this.d.logger.warn({ stuck: this.inFlight.size }, "worker stopped with jobs still in flight; leases will expire");
+      this.d.logger.warn(
+        { stuck: this.inFlight.size },
+        "worker stopped with jobs still in flight; leases will expire",
+      );
     } else {
       this.d.logger.info("worker drained cleanly");
     }
@@ -214,9 +215,16 @@ export class Worker {
       } catch (err) {
         logger.warn({ err, jobId: job.id }, "lease renewal failed");
       }
-      if (this.inFlight.has(job.id)) this.renewTimers.set(job.id, setTimeout(() => void tick(), interval));
+      if (this.inFlight.has(job.id))
+        this.renewTimers.set(
+          job.id,
+          setTimeout(() => void tick(), interval),
+        );
     };
-    this.renewTimers.set(job.id, setTimeout(() => void tick(), interval));
+    this.renewTimers.set(
+      job.id,
+      setTimeout(() => void tick(), interval),
+    );
   }
 
   private record(job: LeasedJob, outcome: string, durationMs: number): void {

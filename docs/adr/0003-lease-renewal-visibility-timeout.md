@@ -8,7 +8,7 @@
 When a worker leases a job, other workers must not also run it. But if that
 worker dies, the job has to become available again. The classic tension: a
 **fixed visibility timeout** must be longer than the slowest job (or a slow job
-gets double-run) *and* short enough that a crash is recovered quickly — and
+gets double-run) _and_ short enough that a crash is recovered quickly — and
 those pull in opposite directions.
 
 ## Decision
@@ -25,8 +25,8 @@ renewal — i.e. its worker stopped renewing, i.e. it crashed or stalled.
 - **Decouples "how long can a job run" from "how fast do we detect a crash".** A
   10-minute job renews 40 times; a crashed worker's jobs are recoverable within
   ~30s regardless.
-- Uses Redis stream primitives directly — the PEL idle time *is* the lease
-  clock, `XCLAIM` *is* renewal, `XAUTOCLAIM` *is* reclaim. Nothing is
+- Uses Redis stream primitives directly — the PEL idle time _is_ the lease
+  clock, `XCLAIM` _is_ renewal, `XAUTOCLAIM` _is_ reclaim. Nothing is
   reimplemented.
 - Renewal failure is a useful signal: if a worker can't reach Redis to renew, it
   has probably also lost the ability to finish safely, and letting the lease

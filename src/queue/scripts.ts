@@ -131,8 +131,7 @@ export function registerScripts(redis: Redis): QueueScripts {
   return {
     enqueue: (ready, delayed, runAt, now, env) =>
       r.pq_enqueue(ready, delayed, String(runAt), String(now), env),
-    promoteDelayed: (ready, delayed, now, limit) =>
-      r.pq_promote(ready, delayed, String(now), String(limit)),
+    promoteDelayed: (ready, delayed, now, limit) => r.pq_promote(ready, delayed, String(now), String(limit)),
     failJob: (ready, delayed, dlq, group, streamId, nextRunAt, isDead, env, reason) =>
       r.pq_fail(ready, delayed, dlq, group, streamId, String(nextRunAt), isDead ? "1" : "0", env, reason),
     ackJob: (ready, group, streamId) => r.pq_ack(ready, group, streamId),

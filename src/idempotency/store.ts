@@ -13,9 +13,7 @@ import type { JsonValue } from "../core/types.js";
  * crashed and is reclaimable.
  */
 export type BeginResult =
-  | { status: "fresh" }
-  | { status: "completed"; result: JsonValue }
-  | { status: "in_progress" };
+  { status: "fresh" } | { status: "completed"; result: JsonValue } | { status: "in_progress" };
 
 export class IdempotencyStore {
   constructor(
@@ -76,7 +74,9 @@ export class IdempotencyStore {
   }
 
   async sweep(): Promise<number> {
-    const { count } = await this.prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    const { count } = await this.prisma.idempotencyKey.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
     return count;
   }
 }

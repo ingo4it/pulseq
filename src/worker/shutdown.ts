@@ -5,7 +5,11 @@ import type { Logger } from "../logger.js";
  * Postgres), with a hard deadline so the process always exits. The worker's own
  * `stop()` does the job draining; this just sequences the teardown.
  */
-export function installShutdown(logger: Logger, steps: Array<() => Promise<void>>, deadlineMs = 30_000): void {
+export function installShutdown(
+  logger: Logger,
+  steps: Array<() => Promise<void>>,
+  deadlineMs = 30_000,
+): void {
   let shuttingDown = false;
 
   const run = async (signal: string): Promise<void> => {

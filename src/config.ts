@@ -12,7 +12,12 @@ const schema = z.object({
     namespaces: z
       .string()
       .default("default")
-      .transform((s) => s.split(",").map((v) => v.trim()).filter(Boolean)),
+      .transform((s) =>
+        s
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean),
+      ),
     concurrency: z.coerce.number().int().positive().default(16),
     batchSize: z.coerce.number().int().positive().default(8),
     leaseTtlMs: z.coerce.number().int().positive().default(30_000),

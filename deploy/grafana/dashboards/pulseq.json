@@ -35,9 +35,18 @@
       "title": "Processing latency p50 / p95 / p99 (s)",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "targets": [
-        { "expr": "histogram_quantile(0.5, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))", "legendFormat": "p50" },
-        { "expr": "histogram_quantile(0.95, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))", "legendFormat": "p95" },
-        { "expr": "histogram_quantile(0.99, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))", "legendFormat": "p99" }
+        {
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(pulseq_job_processing_seconds_bucket[5m])))",
+          "legendFormat": "p99"
+        }
       ]
     },
     {

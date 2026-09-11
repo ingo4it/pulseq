@@ -39,11 +39,7 @@ const app = await buildAdminServer(logger, {
   namespaces: [...config.worker.namespaces],
 });
 
-installShutdown(logger, [
-  () => app.close(),
-  async () => void redis.disconnect(),
-  () => prisma.$disconnect(),
-]);
+installShutdown(logger, [() => app.close(), async () => void redis.disconnect(), () => prisma.$disconnect()]);
 
 await app.listen({ host: "0.0.0.0", port: config.adminPort });
 logger.info({ port: config.adminPort }, "admin API up");

@@ -40,12 +40,12 @@ allowed to lag Redis by one transition.
 
 ## Redis layout, per namespace
 
-| Key | Type | Role |
-| --- | --- | --- |
-| `pulseq:{ns}:ready` | stream + group `workers` | jobs runnable now; leased via `XREADGROUP` |
-| `pulseq:{ns}:delayed` | ZSET (score = runAt ms) | scheduled retries and `delayMs` jobs |
-| `pulseq:{ns}:dlq` | stream | jobs that exhausted `maxAttempts` |
-| `pulseq:{ns}:paused` | string | presence ⇒ workers stop leasing this ns |
+| Key                   | Type                     | Role                                       |
+| --------------------- | ------------------------ | ------------------------------------------ |
+| `pulseq:{ns}:ready`   | stream + group `workers` | jobs runnable now; leased via `XREADGROUP` |
+| `pulseq:{ns}:delayed` | ZSET (score = runAt ms)  | scheduled retries and `delayMs` jobs       |
+| `pulseq:{ns}:dlq`     | stream                   | jobs that exhausted `maxAttempts`          |
+| `pulseq:{ns}:paused`  | string                   | presence ⇒ workers stop leasing this ns    |
 
 ## Job lifecycle
 

@@ -57,14 +57,14 @@ flowchart LR
 
 ## Tech stack
 
-| Area | Choice |
-|------|--------|
-| Language | TypeScript (Node.js) |
-| Transport | Redis streams + consumer groups |
-| Durable state | PostgreSQL (job records, idempotency ledger) |
-| Metrics | prom-client → Prometheus → Grafana |
-| Tests | Vitest + Testcontainers (real Redis + Postgres) |
-| Packaging | Docker Compose for the full stack |
+| Area          | Choice                                          |
+| ------------- | ----------------------------------------------- |
+| Language      | TypeScript (Node.js)                            |
+| Transport     | Redis streams + consumer groups                 |
+| Durable state | PostgreSQL (job records, idempotency ledger)    |
+| Metrics       | prom-client → Prometheus → Grafana              |
+| Tests         | Vitest + Testcontainers (real Redis + Postgres) |
+| Packaging     | Docker Compose for the full stack               |
 
 ## Getting started
 
@@ -85,9 +85,9 @@ Grafana is at `http://localhost:3000` (admin / admin), dashboard pre-provisioned
 
 Reproduce with `pnpm bench` (results committed under `bench/results/`):
 
-| Scenario | Throughput | p99 latency | Retry rate |
-|----------|-----------:|------------:|-----------:|
-| _to be measured_ | — | — | — |
+| Scenario         | Throughput | p99 latency | Retry rate |
+| ---------------- | ---------: | ----------: | ---------: |
+| _to be measured_ |          — |           — |          — |
 
 The load harness injects a configurable failure rate on the downstream so the
 retry / DLQ paths are actually exercised in the numbers.

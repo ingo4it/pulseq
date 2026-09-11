@@ -1,12 +1,6 @@
 /** Dependency-free domain types shared across queue, worker, admin, metrics. */
 
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
 export type EnqueueOptions = {
   /** logical queue; workers subscribe to a set of namespaces */

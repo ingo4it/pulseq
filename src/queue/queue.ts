@@ -127,7 +127,12 @@ export class Queue {
    * Lease up to `count` new jobs, blocking up to `blockMs` for one to arrive.
    * Each returned job's attempt is incremented and its lease clock started.
    */
-  async leaseBatch(namespace: string, consumer: string, count: number, blockMs: number): Promise<LeasedJob[]> {
+  async leaseBatch(
+    namespace: string,
+    consumer: string,
+    count: number,
+    blockMs: number,
+  ): Promise<LeasedJob[]> {
     await this.ensureGroup(namespace);
     const conn = this.opts.blockingRedis ?? this.opts.redis;
     const res = (await conn.xreadgroup(
@@ -183,7 +188,12 @@ export class Queue {
     await this.opts.prisma.$transaction([
       this.opts.prisma.job.update({
         where: { id: job.id },
-        data: { state: "SUCCEEDED", finishedAt: new Date(this.clock.now()), streamId: null, leaseOwner: null },
+        data: {
+          state: "SUCCEEDED",
+          finishedAt: new Date(this.clock.now()),
+          streamId: null,
+          leaseOwner: null,
+        },
       }),
       this.opts.prisma.jobAttempt.create({
         data: {

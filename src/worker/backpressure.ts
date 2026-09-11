@@ -35,12 +35,16 @@ export class BackpressureGate {
     };
   }
 
-  async waitForCapacity(namespace: string, opts: { pollMs: number; timeoutMs?: number } = { pollMs: 250 }): Promise<void> {
+  async waitForCapacity(
+    namespace: string,
+    opts: { pollMs: number; timeoutMs?: number } = { pollMs: 250 },
+  ): Promise<void> {
     const deadline = opts.timeoutMs ? Date.now() + opts.timeoutMs : Infinity;
     for (;;) {
       const state = await this.check(namespace);
       if (!state.throttled) return;
-      if (Date.now() >= deadline) throw new Error(`backpressure: ${namespace} still throttled after ${opts.timeoutMs}ms`);
+      if (Date.now() >= deadline)
+        throw new Error(`backpressure: ${namespace} still throttled after ${opts.timeoutMs}ms`);
       await new Promise((r) => setTimeout(r, opts.pollMs));
     }
   }
